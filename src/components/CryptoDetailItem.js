@@ -9,6 +9,7 @@ function CryptoDetailItem () {
   const [itemData, setItemData] = useState({})
   const [updatedPrice, setUpdatedPrice] = useState()
   const [loading, setLoading] = useState(false)
+  const [isError,setIsError] = useState()
   const socket = new WebSocket(`wss://ws.coincap.io/prices?assets=${params.id}`)
 
   useEffect(() => {
@@ -17,6 +18,11 @@ function CryptoDetailItem () {
       const response = await fetch(
         `https://api.coincap.io/v2/assets/${params.id}`
       )
+      if(!response.ok){
+        setLoading(false)
+        setIsError(response.status)
+        return;
+      }
       setLoading(false)
       const resData = await response.json()
       setItemData(resData.data)
@@ -36,6 +42,8 @@ function CryptoDetailItem () {
     // console.log("open",e)
   }
   return (
+    <div>
+      {isError=== 404 ? <h1>404! The page you are trying to access doesn't exist</h1> :
     <div className={classes.main}>
       {loading ? (
         <CircularProgress />
@@ -94,7 +102,9 @@ function CryptoDetailItem () {
       >
         Back to home
       </button>
+    </div>}
     </div>
+    
   )
 }
 
