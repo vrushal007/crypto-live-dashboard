@@ -3,6 +3,7 @@ import { styled } from '@mui/material/styles'
 import TableCell, { tableCellClasses } from '@mui/material/TableCell'
 import TableRow from '@mui/material/TableRow'
 import { useNavigate } from 'react-router-dom'
+import {io} from 'socket.io-client'
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -27,19 +28,29 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 
 function CryptoItem (props) {
   const navigate = useNavigate()
-  const socket = new WebSocket(
-    `wss://ws.coincap.io/prices?assets=${props.item.id}`
-  )
-
   const [changedData, setChangedData] = useState(props)
+  
+  const price = +props.item.priceUsd > 1 ? (+props.item.priceUsd).toFixed(2) : props.item.priceUsd
   useEffect(() => {
     setChangedData(props)
   }, [props])
 
+  const socket = new WebSocket(
+    `wss://ws.coincap.io/prices?assets=${props.item.id}`
+  )
+ 
   socket.onmessage = data => {
-    // console.log(JSON.parse(data.data))
-    setChangedData(JSON.parse(data.data))
+    console.log(JSON.parse(data.data))
   }
+  
+
+  // useEffect(()=>{
+    // const socket = io(`wss://ws.coincap.io/prices?assets=${props.item.id}`)
+    // socket.on('data',(data)=>{      
+    //   console.log(data)
+    //   // setChangedData(JSON.parse(data.data))
+    // })
+  // },[])
 
   const itemClickHandler = useCallback(() => {
     navigate(`/${props.item.id}`)
@@ -63,14 +74,14 @@ function CryptoItem (props) {
             </StyledTableCell>
             <StyledTableCell align='center'>
               {(changedData && changedData[props.item.id]) ||
-                props.item.priceUsd}
+                price}
             </StyledTableCell>
             <StyledTableCell align='right'>
               {props.item.marketCapUsd}
             </StyledTableCell>
           </StyledTableRow>
         ),
-        [changedData, props, itemClickHandler]
+        [props,itemClickHandler,price,changedData]
       )}
     </>
   )

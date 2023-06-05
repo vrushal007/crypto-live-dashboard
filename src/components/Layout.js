@@ -10,6 +10,7 @@ import TableRow from '@mui/material/TableRow'
 import Paper from '@mui/material/Paper'
 import CryptoItem from './CryptoItem'
 import { CircularProgress } from '@mui/material'
+import {useSelector} from 'react-redux'
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -22,14 +23,18 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
 }))
 
 function Layout (props) {
-  const [currencyList, setCurrencyList] = useState()
+  // const [currencyList, setCurrencyList] = useState()
+  const items = useSelector(state=>state.ui.items)
+  console.log(items)
+  // setCurrencyList(items)
   // console.log(props.query)
-  useEffect(() => {
-    fetch('https://api.coincap.io/v2/assets').then(async data => {
-      const resData = await data.json()
-      setCurrencyList(resData.data)
-    })
-  }, [])
+  // useEffect(() => {
+  //   fetch('https://api.coincap.io/v2/assets').then(async data => {
+  //     const resData = await data.json()
+  //     setCurrencyList(resData.data)
+  //   })
+  // }, [])
+
 
   return (
     <TableContainer
@@ -46,8 +51,8 @@ function Layout (props) {
           </TableRow>
         </TableHead>
         <TableBody>
-          {currencyList ? (
-            currencyList
+          {items ? (
+            items
               .filter(item => item.name.toLowerCase().match(props.query))
               .map(item => <CryptoItem key={item.rank} item={item} />)
           ) : (
