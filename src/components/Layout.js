@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 // import { io } from 'socket.io-client'
 import { styled } from '@mui/material/styles'
 import Table from '@mui/material/Table'
@@ -11,6 +11,7 @@ import Paper from '@mui/material/Paper'
 import CryptoItem from './CryptoItem'
 import { CircularProgress } from '@mui/material'
 import {useSelector} from 'react-redux'
+import {useGetAllCryptoQuery} from '../api/cryptoApi'
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -24,8 +25,9 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
 
 function Layout (props) {
   // const [currencyList, setCurrencyList] = useState()
-  const items = useSelector(state=>state.ui.items)
-  console.log(items)
+  // const items = useSelector(state=>state.ui.items)
+  // console.log(items)
+
   // setCurrencyList(items)
   // console.log(props.query)
   // useEffect(() => {
@@ -35,7 +37,9 @@ function Layout (props) {
   //   })
   // }, [])
 
-
+  const {data:items,error} = useGetAllCryptoQuery()
+  console.log(error)
+  console.log(items)
   return (
     <TableContainer
       component={Paper}
@@ -52,7 +56,7 @@ function Layout (props) {
         </TableHead>
         <TableBody>
           {items ? (
-            items
+            items.data
               .filter(item => item.name.toLowerCase().match(props.query))
               .map(item => <CryptoItem key={item.rank} item={item} />)
           ) : (

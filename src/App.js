@@ -8,20 +8,20 @@ import {fetchData} from './store/ui-actions'
 import {uiActions} from './store/ui-slice'
 
 function App () {
-  const dispatch = useDispatch()
+  // const dispatch = useDispatch()
   
 
-  useEffect(()=>{
-    const getData = (async () => {
-      const data = await fetchData()
-      dispatch(uiActions.updateItems(data))
-    })
-    try{
-      getData()
-    }catch(e){
-      console.log(e)
-    }
-  },[dispatch])
+  // useEffect(()=>{
+  //   const getData = (async () => {
+  //     const data = await fetchData()
+  //     dispatch(uiActions.updateItems(data))
+  //   })
+  //   try{
+  //     getData()
+  //   }catch(e){
+  //     console.log(e)
+  //   }
+  // },[dispatch])
 
   return (
     <div>
