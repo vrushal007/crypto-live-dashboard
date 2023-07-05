@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 // import { io } from 'socket.io-client'
 import { styled } from '@mui/material/styles'
 import Table from '@mui/material/Table'
@@ -10,8 +10,8 @@ import TableRow from '@mui/material/TableRow'
 import Paper from '@mui/material/Paper'
 import CryptoItem from './CryptoItem'
 import { CircularProgress } from '@mui/material'
-import {useSelector} from 'react-redux'
-import {useGetAllCryptoQuery} from '../api/cryptoApi'
+import { useGetAllCryptoQuery } from '../api/cryptoApi'
+import classes from './Layout.module.css'
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -24,50 +24,88 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
 }))
 
 function Layout (props) {
-  // const [currencyList, setCurrencyList] = useState()
-  // const items = useSelector(state=>state.ui.items)
-  // console.log(items)
+  const { data, error, isSuccess, isError, isLoading } = useGetAllCryptoQuery()
+  const cryptoData = isSuccess ? data?.data : []
+  const [currentPage, setCurrentPage] = useState(1)
+  const cryptoPerPage = 8
+  const totalPages = Math.ceil(cryptoData.length / cryptoPerPage)
+  const indexOfLastMovie = currentPage * cryptoPerPage
+  const indexOfFirstMovie = indexOfLastMovie - cryptoPerPage
+  const currentCryptos = isSuccess
+    ? cryptoData.slice(indexOfFirstMovie, indexOfLastMovie)
+    : []
 
-  // setCurrencyList(items)
-  // console.log(props.query)
-  // useEffect(() => {
-  //   fetch('https://api.coincap.io/v2/assets').then(async data => {
-  //     const resData = await data.json()
-  //     setCurrencyList(resData.data)
-  //   })
-  // }, [])
+  const handlePageChange = pageNumber => {
+    setCurrentPage(pageNumber)
+  }
 
-  const {data:items,error} = useGetAllCryptoQuery()
-  console.log(error)
-  console.log(items)
   return (
-    <TableContainer
-      component={Paper}
-      style={{ width: '100%', height: '70vh', overflow: 'scroll' }}
-    >
-      <Table stickyHeader aria-label='sticky table'>
-        <TableHead>
-          <TableRow>
-            <StyledTableCell>Name</StyledTableCell>
-            <StyledTableCell align='center'>Price(in USD)</StyledTableCell>
-            {/* <StyledTableCell align='right'>Symbol</StyledTableCell> */}
-            <StyledTableCell align='right'>Market Cap(in USD)</StyledTableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {items ? (
-            items.data
-              .filter(item => item.name.toLowerCase().match(props.query))
-              .map(item => <CryptoItem key={item.rank} item={item} />)
-          ) : (
-            <CircularProgress
-              color='inherit'
-              style={{ alignItems: 'center' }}
-            />
-          )}
-        </TableBody>
-      </Table>
-    </TableContainer>
+    <>
+      <TableContainer
+        component={Paper}
+        style={{ width: '100%', height: '67vh' }}
+      >
+        <Table stickyHeader aria-label='table'>
+          <TableHead>
+            <TableRow>
+              <StyledTableCell width={'33%'} align='left'>
+                Name
+              </StyledTableCell>
+              <StyledTableCell width={'34%'} align='center'>
+                Price(in USD)
+              </StyledTableCell>
+              <StyledTableCell width={'33%'} align='right'>
+                Market Cap(in USD)
+              </StyledTableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {isLoading && (
+              <TableRow>
+                <TableCell colSpan={3} align='center'>
+                  <CircularProgress
+                    color='inherit'
+                    style={{ alignItems: 'center' }}
+                    data-testid="loading"
+                  />
+                </TableCell>
+              </TableRow>
+            )}
+            {isError && <TableRow>
+                <TableCell colSpan={3} align="center">
+                  <p data-testid='error' style={{color:'red'}}>{error.error}</p>
+                </TableCell>
+              </TableRow>}
+            {isSuccess &&
+              (!props.query || props.query.length === 0) &&
+              currentCryptos
+                // .filter(item => item.name.toLowerCase().match(props.query))
+                .map(item => <CryptoItem data-testid="singleCrypto" key={item.rank} item={item} />)}
+            {isSuccess &&
+              props.query?.length > 0 &&
+              cryptoData
+                .filter(item => item.name.toLowerCase().match(props.query))
+                .map(item => <CryptoItem data-testid="singleCrypto" key={item.rank} item={item} />)}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      {(!props.query || props.query.length === 0) && (
+        <div style={{ margin: '1rem' }}>
+          {Array.from({ length: totalPages }, (_, index) => (
+            <button
+              data-testid={`btnPage`}
+              key={index + 1}
+              onClick={() => handlePageChange(index + 1)}
+              className={`${classes.pageButton} ${
+                currentPage === index + 1 ? classes.activePage : ''
+              }`}
+            >
+              {index + 1}
+            </button>
+          ))}
+        </div>
+      )}
+    </>
   )
 }
 

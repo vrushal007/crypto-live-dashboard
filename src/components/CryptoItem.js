@@ -3,7 +3,6 @@ import { styled } from '@mui/material/styles'
 import TableCell, { tableCellClasses } from '@mui/material/TableCell'
 import TableRow from '@mui/material/TableRow'
 import { useNavigate } from 'react-router-dom'
-import {io} from 'socket.io-client'
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -24,8 +23,6 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   }
 }))
 
-// const socket = new WebSocket('wss://ws.coincap.io/prices?assets=ALL')
-
 function CryptoItem (props) {
   const navigate = useNavigate()
   const [changedData, setChangedData] = useState(props)
@@ -40,7 +37,7 @@ function CryptoItem (props) {
   )
  
   socket.onmessage = data => {
-    console.log(JSON.parse(data.data))
+    // console.log(JSON.parse(data.data))
   }
   
 
@@ -64,6 +61,7 @@ function CryptoItem (props) {
             onClick={itemClickHandler}
             key={props.item.rank}
             style={{ cursor: 'pointer' }}
+            data-testid={props['data-testid']}
           >
             <StyledTableCell
               style={{ position: 'relative' }}
