@@ -5,8 +5,11 @@ export const cryptoApi = createApi({
     endpoints: (builder) => ({
         getAllCrypto : builder.query({
             query: () => '/v2/assets'
+        }),
+        getCrypto : builder.query({
+            query: (id) => `/v2/assets/${id}`
         })
     })
 })
 
-export const {useGetAllCryptoQuery} = cryptoApi
+export const {useGetAllCryptoQuery,useGetCryptoQuery} = cryptoApi
