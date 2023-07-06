@@ -79,7 +79,6 @@ function Layout (props) {
             {isSuccess &&
               (!props.query || props.query.length === 0) &&
               currentCryptos
-                // .filter(item => item.name.toLowerCase().match(props.query))
                 .map(item => <CryptoItem data-testid="singleCrypto" key={item.rank} item={item} />)}
             {isSuccess &&
               props.query?.length > 0 &&

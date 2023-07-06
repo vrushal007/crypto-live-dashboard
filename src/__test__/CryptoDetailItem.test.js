@@ -2,10 +2,15 @@ import React from 'react'
 import { fireEvent, render, screen } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import CryptoDetailItem from '../components/CryptoDetailItem'
+import {useGetCryptoQuery} from '../api/cryptoApi'
 
 jest.mock('react-router-dom', () => ({
   useNavigate: jest.fn(),
   useParams: () => ({ id: 'bitcoin' })
+}))
+
+jest.mock('../api/cryptoApi',()=>({
+  useGetCryptoQuery: jest.fn()
 }))
 
 const cryptoItem = {
@@ -20,57 +25,123 @@ const cryptoItem = {
 }
 
 describe('Crypto Detail Item', () => {
-  test('renders correctly', async () => {
-    const mockNavigate = jest.fn()
-    jest.requireMock('react-router-dom').useNavigate = () => mockNavigate
+  
+  // beforeAll(()=>{
+  //   const mockSocketServer = new Server('wss://ws.coincap.io/prices?assets=bitcoin')
+  
+  //     mockSocketServer.on('connection',(socket)=>{
+  //       socket.onmessage(()=>{
+  //         socket.send({data:JSON.stringify({bitcoin:40000})})
+  //       })
+  //     })
+  // })
+  
+  test('loading state renders correctly', async () => {
+    
+    useGetCryptoQuery.mockReturnValue({
+      data:undefined,
+      isLoading:true,
+      isError:false,
+      isSuccess:false,
+      error:null
+    })
+
     render(<CryptoDetailItem />)
+
 
     expect(screen.getByRole('progressbar')).toBeInTheDocument()
 
-    // global.WebSocket = jest.fn().mockImplementation(() => ({
-    //   onopen: jest.fn(),
-    //   onmessage: jest.fn(),
-    //   onerror: jest.fn(),
-    // }));
-
-    // screen.debug()
-    // screen.debug()
-    // const name = await screen.findByText('Bitcoin')
-    // expect(name).toBeInTheDocument()
-
-    // const symbol = await screen.findByTestId('symbol',
-    //   {
-    //     timeout:3000
-    //   }
-    // )
-    // const price = screen.getByTestId('price')
-    // expect(symbol).toBeInTheDocument()
-    // expect(price).toBeInTheDocument()
+  })
+  test('error state renders correctly', async () => {
     
-    // const updatedPrice = { bitcoin: '55000' }
-    // fireEvent.mockEvent(
-    //   new MessageEvent('message', { data: JSON.stringify(updatedPrice) })
-    // )
+    useGetCryptoQuery.mockReturnValue({
+      data:undefined,
+      isLoading:false,
+      isError:true,
+      isSuccess:false,
+      error:{error:'failed to fetch'}
+    })
 
-    // expect(screen.getByTestId('price')).toHaveTextContent('55000')
+    render(<CryptoDetailItem />)
 
-    fireEvent.click(screen.getByTestId('backBtn'))
+    const errEle = screen.getByText(/Something wrong/i)
+    expect(errEle).toBeInTheDocument()
 
-    expect(mockNavigate).toHaveBeenCalled()
   })
 
-  // test('back button works correctly', async () => {
+  test('back button works correctly', async () => {
+    const mockNavigate = jest.fn()
+    jest.requireMock('react-router-dom').useNavigate = () => mockNavigate
+    
+    useGetCryptoQuery.mockReturnValue({
+      data:undefined,
+      isLoading:true,
+      isError:false,
+      isSuccess:false,
+      error:null
+    })
+    
+    render(<CryptoDetailItem />)
+
+    const backBtn = screen.getByTestId('backBtn')
+    fireEvent.click(backBtn)
+    expect(mockNavigate).toHaveBeenCalledTimes(1)
+    expect(mockNavigate).toHaveBeenCalledWith('/')
+  })
+
+  test('component renders correctly', async () => {
+    const mockNavigate = jest.fn()
+    jest.requireMock('react-router-dom').useNavigate = () => mockNavigate
+    
+    useGetCryptoQuery.mockReturnValue({
+      data:{
+        data:cryptoItem
+      },
+      isLoading:false,
+      isError:false,
+      isSuccess:true,
+      error:null
+    })
+
+    render(<CryptoDetailItem />)
+    expect(screen.getByText(/btc/i)).toBeInTheDocument()
+    expect(screen.getByTestId('price')).toBeInTheDocument()
+
+  })
+
+
+  // test('socket works correctly', async () => {
+  //   user.setup()
   //   const mockNavigate = jest.fn()
   //   jest.requireMock('react-router-dom').useNavigate = () => mockNavigate
-  //   render(<CryptoDetailItem />)
 
-  //   global.fetch = jest.fn().mockResolvedValue({
-  //     ok: false
+  //   useGetCryptoQuery.mockReturnValue({
+  //     data:{
+  //       data:cryptoItem
+  //     },
+  //     isLoading:false,
+  //     isError:false,
+  //     isSuccess:true,
+  //     error:null
   //   })
 
-  //   const backBtn = screen.getByTestId('backBtn')
-  //   fireEvent.click(backBtn)
-  //   expect(mockNavigate).toHaveBeenCalledTimes(1)
-  //   expect(mockNavigate).toHaveBeenCalledWith('/')
+
+  //   render(<CryptoDetailItem />)
+    
+  //   const price = screen.getByTestId('price')
+
+  //   expect(price).toBeInTheDocument()
+  //   expect(price).toHaveTextContent("50000")
+
+  //   // const socket = new WebSocket('ws://localhost'); // Create a WebSocket instance
+  //   // socket.dispatchEvent(new MessageEvent('message',{data:JSON.stringify({bitcoin:40000})}))
+  //   // // user.mockEvent(new MessageEvent('message',{data:JSON.stringify({bitcoin:40000})}))
+  //   // expect(price).toHaveTextContent("40000")
+
+  //   expect(price).toBeInTheDocument()
+  //   expect(price).toHaveTextContent("50000")
+
+  //  expect(await screen.findByText('40000')).toBeInTheDocument()
+
   // })
 })

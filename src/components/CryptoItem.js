@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import { styled } from '@mui/material/styles'
 import TableCell, { tableCellClasses } from '@mui/material/TableCell'
 import TableRow from '@mui/material/TableRow'
@@ -25,29 +25,24 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 
 function CryptoItem (props) {
   const navigate = useNavigate()
-  const [changedData, setChangedData] = useState(props)
-  
-  const price = +props.item.priceUsd > 1 ? (+props.item.priceUsd).toFixed(2) : props.item.priceUsd
-  useEffect(() => {
-    setChangedData(props)
-  }, [props])
+  // const [changedData, setChangedData] = useState(props)
+  const [updatedPrice, setUpdatedPrice] = useState()
+
+  const price =
+    +props.item.priceUsd > 1
+      ? (+props.item.priceUsd).toFixed(2)
+      : props.item.priceUsd
+  // useEffect(() => {
+  //   setChangedData(props)
+  // }, [props])
 
   const socket = new WebSocket(
     `wss://ws.coincap.io/prices?assets=${props.item.id}`
   )
- 
   socket.onmessage = data => {
-    // console.log(JSON.parse(data.data))
+    console.log(data.data)
+    setUpdatedPrice(JSON.parse(data.data))
   }
-  
-
-  // useEffect(()=>{
-    // const socket = io(`wss://ws.coincap.io/prices?assets=${props.item.id}`)
-    // socket.on('data',(data)=>{      
-    //   console.log(data)
-    //   // setChangedData(JSON.parse(data.data))
-    // })
-  // },[])
 
   const itemClickHandler = useCallback(() => {
     navigate(`/${props.item.id}`)
@@ -55,32 +50,27 @@ function CryptoItem (props) {
 
   return (
     <>
-      {useMemo(
-        () => (
-          <StyledTableRow
-            onClick={itemClickHandler}
-            key={props.item.rank}
-            style={{ cursor: 'pointer' }}
-            data-testid={props['data-testid']}
-          >
-            <StyledTableCell
-              style={{ position: 'relative' }}
-              component='th'
-              scope='row'
-            >
-              {props.item.name}
-            </StyledTableCell>
-            <StyledTableCell align='center'>
-              {(changedData && changedData[props.item.id]) ||
-                price}
-            </StyledTableCell>
-            <StyledTableCell align='right'>
-              {props.item.marketCapUsd}
-            </StyledTableCell>
-          </StyledTableRow>
-        ),
-        [props,itemClickHandler,price,changedData]
-      )}
+    <StyledTableRow
+      onClick={itemClickHandler}
+      key={props.item.rank}
+      style={{ cursor: 'pointer' }}
+      data-testid={props['data-testid']}
+    >
+      <StyledTableCell
+        style={{ position: 'relative' }}
+        component='th'
+        scope='row'
+        data-testid='name'
+      >
+        {props.item.name}
+      </StyledTableCell>
+      <StyledTableCell align='center' data-testid='price'>
+        {(updatedPrice && updatedPrice[props.item.id]) || price}
+      </StyledTableCell>
+      <StyledTableCell align='right' data-testid='marketCap'>
+        {props.item.marketCapUsd}
+      </StyledTableCell>
+    </StyledTableRow>
     </>
   )
 }
